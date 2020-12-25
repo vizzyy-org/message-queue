@@ -22,7 +22,7 @@ Resources:
       Statistic: "Sum"
       Period: "300"
       EvaluationPeriods: "1"
-      Threshold: "10"
+      Threshold: "50"
       ComparisonOperator: "GreaterThanThreshold"
       AlarmActions:
         - arn:aws:sns:us-east-1:476889715112:unhealthyHost

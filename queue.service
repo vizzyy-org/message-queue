@@ -1,0 +1,13 @@
+[Unit]
+Description=Queue Processor
+
+[Service]
+WorkingDirectory=/home/pi/message-queue
+ExecStart=/usr/bin/python3 -u process_messages.py
+User=pi
+Type=simple
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

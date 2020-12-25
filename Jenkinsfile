@@ -65,7 +65,12 @@ pipeline {
             }
             steps {
                 script {
-                    sh("/usr/local/bin/sam deploy --template-file packaged.yml --stack-name $FUNC_NAME --capabilities CAPABILITY_IAM")
+                    try {
+                        sh("/usr/local/bin/sam deploy --template-file packaged.yml --stack-name $FUNC_NAME --capabilities CAPABILITY_IAM")
+                    } catch (Exception e) {
+                        echo "Could not SAM deploy -- empty changeset?"
+                    }
+
                     sh("ssh pi@four.local 'cd /home/pi/message-queue; git pull origin master; sudo systemctl restart queue; sudo systemctl status queue;'")
                 }
             }

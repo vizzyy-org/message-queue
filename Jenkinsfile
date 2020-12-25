@@ -21,7 +21,7 @@ pipeline {
         quietPeriod(1)
     }
     parameters {
-        booleanParam(name: 'DeleteExisting', defaultValue: false, description: 'Delete existing stack?')
+        booleanParam(name: 'DeleteExisting', defaultValue: true, description: 'Delete existing stack?')
         booleanParam(name: 'Deploy', defaultValue: true, description: 'Deploy latest artifact')
     }
     stages {
@@ -66,6 +66,7 @@ pipeline {
             steps {
                 script {
                     sh("/usr/local/bin/sam deploy --template-file packaged.yml --stack-name $FUNC_NAME --capabilities CAPABILITY_IAM")
+                    sh("ssh pi@four.local 'cd /home/pi/message-queue; git pull origin master; sudo systemctl restart queue; sudo systemctl status queue;'")
                 }
             }
         }

@@ -21,7 +21,7 @@ def process_queue():
         WaitTimeSeconds=0
     )
 
-    print(response)
+    # print(response)
     if "Messages" not in response.keys():
         print("No messages to process.")
         return False
@@ -34,14 +34,14 @@ def process_queue():
     message_id = message['MessageId']
 
     print(f"Received message: {message_id}")
-    print(f"{body}")
+    # print(f"{body}")
 
     if store_log(body):
         sqs.delete_message(
             QueueUrl=queue_url,
             ReceiptHandle=receipt_handle
         )
-        print(f"Processed & deleted message: {receipt_handle}")
+        print(f"Processed & deleted message: {message_id}")
         return True
     else:
         return False

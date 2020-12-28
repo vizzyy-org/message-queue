@@ -48,6 +48,13 @@ def process_queue():
 
     print(f"Received message: {message_id}")
 
+    if body["table"] == "spork_metrics":
+        sqs.delete_message(
+            QueueUrl=queue_url,
+            ReceiptHandle=receipt_handle
+        )
+        print(f"Processed & deleted spork_metrics message: {message_id}")
+
     if db and store_log(body):
         sqs.delete_message(
             QueueUrl=queue_url,

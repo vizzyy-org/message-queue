@@ -49,13 +49,17 @@ def process_queue():
     print(f"Received message: {message_id}")
 
     if body["table"] == "spork_metrics":
-        sqs.delete_message(
-            QueueUrl=queue_url,
-            ReceiptHandle=receipt_handle
-        )
-        print(f"Processed & deleted spork_metrics message: {message_id}")
+        if db and store_spork_log(body):
+            sqs.delete_message(
+                QueueUrl=queue_url,
+                ReceiptHandle=receipt_handle
+            )
+            print(f"Processed & deleted spork_metrics message: {message_id}")
+            return True
+        else:
+            return False
 
-    if db and store_log(body):
+    if db and store_canary_log(body):
         sqs.delete_message(
             QueueUrl=queue_url,
             ReceiptHandle=receipt_handle
@@ -66,7 +70,7 @@ def process_queue():
         return False
 
 
-def store_log(body):
+def store_canary_log(body):
     global db, cursor
     try:
         db.ping(True)  # Assert connection valid, otherwise attempt to reconnect (True)
@@ -79,6 +83,30 @@ def store_log(body):
         cursor = db.cursor()  # Cursor init is very cheap, so we do not reuse it
         sql = f"INSERT INTO graphing_data.canary_metrics(path, ms_elapsed, timestamp, error, success) " \
               f"VALUES('{path}', '{elapsed_ms}', '{timestamp}', '{int(not success)}', '{int(success)}')"
+        cursor.execute(sql)
+        db.commit()
+        cursor.close()
+        print(f"{sql}")
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+
+def store_spork_log(body):
+    global db, cursor
+    try:
+        db.ping(True)  # Assert connection valid, otherwise attempt to reconnect (True)
+
+        user = body["values"]["user"]
+        service = body["values"]["service"]
+        message = body["values"]["message"]
+        success = body["values"]["success"]
+        timestamp = body["values"]["timestamp"]
+
+        cursor = db.cursor()  # Cursor init is very cheap, so we do not reuse it
+        sql = f"INSERT INTO graphing_data.spork_metrics(service, user, message, timestamp, error, success) " \
+              f"VALUES('{service}', '{user}', '{message}', '{timestamp}', '{int(not success)}', '{int(success)}')"
         cursor.execute(sql)
         db.commit()
         cursor.close()

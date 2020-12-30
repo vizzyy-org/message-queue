@@ -20,10 +20,11 @@ Resources:
               - "MessageQueue"
               - "QueueName"
       Statistic: "Sum"
-      Period: "300"
-      EvaluationPeriods: "1"
-      Threshold: "150"
-      ComparisonOperator: "GreaterThanThreshold"
+      Period: 60
+      DatapointsToAlarm: 3 # this is the M in "M out of N data points to alarm"
+      EvaluationPeriods: 5 # this is the N in "M out of N data points to alarm"
+      Threshold: 150
+      ComparisonOperator: GreaterThanOrEqualToThreshold
       AlarmActions:
         - arn:aws:sns:us-east-1:476889715112:unhealthyHost
       InsufficientDataActions:

@@ -79,14 +79,15 @@ def store_canary_log(body):
         success = body["values"]["success"]
         timestamp = body["values"]["timestamp"]
         elapsed_ms = body["values"]["ms_elapsed"]
+        params = (path, elapsed_ms, timestamp, int(not success), int(success))
 
         cursor = db.cursor()  # Cursor init is very cheap, so we do not reuse it
         sql = f"INSERT INTO graphing_data.canary_metrics(path, ms_elapsed, timestamp, error, success) " \
-              f"VALUES('{path}', '{elapsed_ms}', '{timestamp}', '{int(not success)}', '{int(success)}')"
-        cursor.execute(sql)
+              f"VALUES(%s, %s, %s, %s, %s)"
+        cursor.execute(sql, params)
         db.commit()
         cursor.close()
-        print(f"{sql}")
+        print(f"inserted canary_metrics: {params}")
         return True
     except Exception as e:
         print(e)
@@ -103,14 +104,15 @@ def store_spork_log(body):
         message = body["values"]["message"]
         success = body["values"]["success"]
         timestamp = body["values"]["timestamp"]
+        params = (service, user, message, timestamp, int(not success), int(success))
 
         cursor = db.cursor()  # Cursor init is very cheap, so we do not reuse it
         sql = f"INSERT INTO graphing_data.spork_metrics(service, user, message, timestamp, error, success) " \
-              f"VALUES('{service}', '{user}', '{message}', '{timestamp}', '{int(not success)}', '{int(success)}')"
-        cursor.execute(sql)
+              f"VALUES(%s, %s, %s, %s, %s, %s)"
+        cursor.execute(sql, params)
         db.commit()
         cursor.close()
-        print(f"{sql}")
+        print(f"inserted spork_metrics: {params}")
         return True
     except Exception as e:
         print(e)

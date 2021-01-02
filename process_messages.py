@@ -59,6 +59,17 @@ def process_queue():
         else:
             return False
 
+    if body["table"] == "server_metrics":
+        if db and store_server_metrics(body):
+            sqs.delete_message(
+                QueueUrl=queue_url,
+                ReceiptHandle=receipt_handle
+            )
+            print(f"Processed & deleted server_metrics message: {message_id}")
+            return True
+        else:
+            return False
+
     if db and store_canary_log(body):
         sqs.delete_message(
             QueueUrl=queue_url,
@@ -87,10 +98,10 @@ def store_canary_log(body):
         cursor.execute(sql, params)
         db.commit()
         cursor.close()
-        print(f"inserted canary_metrics: {params}")
+        print(f"Inserted canary_metrics: {params}")
         return True
     except Exception as e:
-        print(e)
+        print(f"Error inserting canary metrics: {e}")
         return False
 
 
@@ -115,7 +126,33 @@ def store_spork_log(body):
         print(f"inserted spork_metrics: {params}")
         return True
     except Exception as e:
-        print(e)
+        print(f"Error inserting spork metrics: {e}")
+        return False
+
+
+def store_server_metrics(body):
+    global db, cursor
+    try:
+        db.ping(True)
+
+        hostname = body["values"]["hostname"]
+        timestamp = body["values"]["timestamp"]
+        metrics = body["values"]["metrics"]
+
+        metric_keys = metrics.keys()
+        cursor = db.cursor()
+        for metric in metric_keys:
+            params = (hostname, timestamp, metric, metrics[metric])
+            print(params)
+            sql = f"INSERT INTO graphing_data.server_metrics(hostname, timestamp, metric, value) " \
+                  f"VALUES(%s, %s, %s, %s)"
+            cursor.execute(sql, params)
+        db.commit()
+        cursor.close()
+        print(f"Inserted into DB: {metrics}")
+        return True
+    except Exception as e:
+        print(f"Error Persisting Metrics: {e}")
         return False
 
 

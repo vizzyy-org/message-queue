@@ -143,7 +143,6 @@ def store_server_metrics(body):
         cursor = db.cursor()
         for metric in metric_keys:
             params = (hostname, timestamp, metric, metrics[metric])
-            print(params)
             sql = f"INSERT INTO graphing_data.server_metrics(hostname, timestamp, metric, value) " \
                   f"VALUES(%s, %s, %s, %s)"
             cursor.execute(sql, params)

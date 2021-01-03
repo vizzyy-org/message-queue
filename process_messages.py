@@ -148,7 +148,7 @@ def store_server_metrics(body):
             cursor.execute(sql, params)
         db.commit()
         cursor.close()
-        print(f"Inserted into DB: {metrics}")
+        print(f"Inserted into DB: {hostname} - {metrics}")
         return True
     except Exception as e:
         print(f"Error Persisting Metrics: {e}")
